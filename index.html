@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commerce Academy - Student Support</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card);
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, #0f172a 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            padding: 0 8px;
+        }
+        .logo-icon {
+            width: 44px; height: 44px;
+            background: var(--secondary);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: bold; color: #1e293b;
+        }
+        .logo-text h1 { font-size: 18px; font-weight: 700; }
+        .logo-text p { font-size: 12px; opacity: 0.8; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-title {
+            font-size: 11px; text-transform: uppercase;
+            letter-spacing: 1px; opacity: 0.6;
+            margin-bottom: 10px; padding: 0 8px;
+        }
+        .nav-btn {
+            width: 100%; text-align: left;
+            background: rgba(255,255,255,0.08);
+            border: none; color: white;
+            padding: 12px 16px; border-radius: 10px;
+            margin-bottom: 6px; cursor: pointer;
+            font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 10px;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255,255,255,0.18);
+            transform: translateX(4px);
+        }
+        .nav-btn .icon { font-size: 18px; }
+        .subject-tag {
+            font-size: 10px; padding: 2px 8px;
+            border-radius: 20px; margin-left: auto;
+            background: rgba(255,255,255,0.15);
+        }
+        .history-list { overflow-y: auto; max-height: 200px; }
+        .history-item {
+            padding: 10px 12px; margin-bottom: 4px;
+            border-radius: 8px; cursor: pointer;
+            font-size: 13px; opacity: 0.85;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            transition: all 0.2s;
+        }
+        .history-item:hover { background: rgba(255,255,255,0.1); opacity: 1; }
+        .history-item.active { background: rgba(255,255,255,0.15); opacity: 1; }
+        .new-chat-btn {
+            background: var(--secondary);
+            color: #1e293b; border: none;
+            padding: 14px; border-radius: 12px;
+            font-weight: 600; font-size: 14px;
+            cursor: pointer; margin-top: 16px;
+            display: flex; align-items: center;
+            justify-content: center; gap: 8px;
+            transition: transform 0.2s;
+        }
+        .new-chat-btn:hover { transform: scale(1.02); }
+        .main-area {
+            flex: 1; display: flex; flex-direction: column;
+            background: var(--bg); overflow: hidden;
+        }
+        .chat-header {
+            background: var(--card); padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .chat-header h2 { font-size: 16px; font-weight: 600; }
+        .header-badges { display: flex; gap: 8px; }
+        .badge {
+            font-size: 11px; padding: 4px 12px;
+            border-radius: 20px; font-weight: 500;
+        }
+        .badge-subject { background: #dbeafe; color: var(--primary); }
+        .badge-admin { background: #fef3c7; color: #92400e; }
+        .badge-general { background: #d1fae5; color: #065f46; }
+        .badge-cbse { background: #d1fae5; color: #065f46; }
+        .messages-container {
+            flex: 1; overflow-y: auto; padding: 24px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .message {
+            max-width: 80%; padding: 16px 20px;
+            border-radius: 16px; line-height: 1.6;
+            font-size: 14px; animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.bot {
+            align-self: flex-start;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .message.bot .subject-label {
+            font-size: 11px; font-weight: 600;
+            color: var(--primary); margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .message.bot .step-box {
+            background: #f1f5f9; border-left: 3px solid var(--primary-light);
+            padding: 12px 16px; margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .message.bot .step-title {
+            font-weight: 600; color: var(--primary); margin-bottom: 6px;
+        }
+        .message.bot .formula {
+            background: #1e293b; color: #e2e8f0;
+            padding: 12px 16px; border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0; overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .message.bot .tip-box {
+            background: #fef3c7; border: 1px solid #f59e0b;
+            padding: 12px; border-radius: 8px; margin-top: 12px;
+            font-size: 13px;
+        }
+        .message.bot .escalate-btn {
+            background: transparent; border: 1px solid var(--error);
+            color: var(--error); padding: 8px 16px;
+            border-radius: 8px; font-size: 12px;
+            cursor: pointer; margin-top: 12px;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .message.bot .escalate-btn:hover { background: var(--error); color: white; }
+        .message.escalate-confirm {
+            align-self: flex-start;
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #065f46;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        .input-area {
+            background: var(--card); padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .input-wrapper {
+            display: flex; gap: 12px; align-items: flex-end;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 16px; padding: 12px 16px;
+        }
+        .input-wrapper textarea {
+            flex: 1; border: none; background: transparent;
+            font-size: 14px; resize: none; outline: none;
+            max-height: 120px; font-family: inherit;
+            line-height: 1.5; color: var(--text);
+        }
+        .input-wrapper textarea::placeholder { color: var(--text-light); }
+        .send-btn {
+            background: var(--primary); color: white;
+            border: none; width: 40px; height: 40px;
+            border-radius: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .send-btn:hover { background: var(--primary-light); transform: scale(1.05); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .quick-actions {
+            display: flex; gap: 8px; margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .quick-tag {
+            background: white; border: 1px solid var(--border);
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 12px; cursor: pointer; color: var(--text-light);
+            transition: all 0.2s;
+        }
+        .quick-tag:hover {
+            border-color: var(--primary); color: var(--primary);
+            background: #eff6ff;
+        }
+        .welcome-screen {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 40px;
+            flex: 1;
+        }
+        .welcome-screen h2 { font-size: 28px; margin-bottom: 12px; color: var(--primary); }
+        .welcome-screen p { color: var(--text-light); margin-bottom: 32px; max-width: 500px; }
+        .subject-cards {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 16px; max-width: 600px; width: 100%;
+        }
+        .subject-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px; cursor: pointer;
+            transition: all 0.2s; text-align: left;
+        }
+        .subject-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 4px 20px rgba(59,130,246,0.1);
+            transform: translateY(-2px);
+        }
+        .subject-card .icon { font-size: 32px; margin-bottom: 12px; }
+        .subject-card h3 { font-size: 16px; margin-bottom: 4px; }
+        .subject-card p { font-size: 13px; margin: 0; color: var(--text-light); }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -280px; top: 0;
+                height: 100vh; z-index: 100; transition: left 0.3s;
+            }
+            .sidebar.open { left: 0; }
+            .menu-toggle {
+                display: block; background: none; border: none;
+                font-size: 24px; cursor: pointer; margin-right: 12px;
+                color: var(--text);
+            }
+            .overlay {
+                display: none; position: fixed; inset: 0;
+                background: rgba(0,0,0,0.5); z-index: 99;
+            }
+            .overlay.show { display: block; }
+            .message { max-width: 95%; }
+        }
+        @media (min-width: 769px) {
+            .menu-toggle { display: none; }
+            .overlay { display: none !important; }
+        }
+        .typing {
+            display: flex; gap: 4px; padding: 16px 20px;
+            background: var(--card); border-radius: 16px;
+            border: 1px solid var(--border); align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .typing-dot {
+            width: 8px; height: 8px; background: var(--text-light);
+            border-radius: 50%; animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <div class="logo-icon">CA</div>
+            <div class="logo-text">
+                <h1>Commerce Academy</h1>
+                <p>Classes 11 &amp; 12 Support</p>
+            </div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-title">Subjects</div>
+            <button class="nav-btn active" data-subject="accountancy" onclick="setSubject('accountancy')">
+                <span class="icon">📊</span> Accountancy <span class="subject-tag">Class 11-12</span>
+            </button>
+            <button class="nav-btn" data-subject="economics" onclick="setSubject('economics')">
+                <span class="icon">📈</span> Economics <span class="subject-tag">Class 11-12</span>
+            </button>
+            <button class="nav-btn" data-subject="business" onclick="setSubject('business')">
+                <span class="icon">🏢</span> Business Studies <span class="subject-tag">Class 11-12</span>
+            </button>
+            <button class="nav-btn" data-subject="maths" onclick="setSubject('maths')">
+                <span class="icon">📐</span> Mathematics <span class="subject-tag">Class 11-12</span>
+            </button>
+        </div>
+        <div class="nav-section">
+            <div class="nav-title">Administration</div>
+            <button class="nav-btn" data-subject="admin" onclick="setSubject('admin')">
+                <span class="icon">🎓</span> Academy Queries
+            </button>
+            <button class="nav-btn" data-subject="general" onclick="setSubject('general')">
+                <span class="icon">💬</span> General Help
+            </button>
+        </div>
+        <div class="nav-section">
+            <div class="nav-title">Recent Chats</div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+        <button class="new-chat-btn" onclick="newChat()">
+            <span>+</span> New Conversation
+        </button>
+    </aside>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-area">
+        <div class="chat-header">
+            <div style="display:flex;align-items:center;">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h2 id="chatTitle">Accountancy Tutor</h2>
+            </div>
+            <div class="header-badges">
+                <span class="badge badge-subject" id="subjectBadge">Accountancy</span>
+                <span class="badge badge-cbse">CBSE 2026</span>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="welcome-screen" id="welcomeScreen">
+                <h2>Welcome to Commerce Academy Support</h2>
+                <p>Your 24/7 assistant for Classes 11 &amp; 12. Get step-by-step solutions, concept explanations, and academy information instantly.</p>
+                <div class="subject-cards">
+                    <div class="subject-card" onclick="setSubject('accountancy'); focusInput();">
+                        <div class="icon">📊</div>
+                        <h3>Accountancy</h3>
+                        <p>Journal entries, ledgers, financial statements, depreciation, partnership</p>
+                    </div>
+                    <div class="subject-card" onclick="setSubject('economics'); focusInput();">
+                        <div class="icon">📈</div>
+                        <h3>Economics</h3>
+                        <p>Micro &amp; macro concepts, statistics, Indian economy, market structures</p>
+                    </div>
+                    <div class="subject-card" onclick="setSubject('business'); focusInput();">
+                        <div class="icon">🏢</div>
+                        <h3>Business Studies</h3>
+                        <p>Management principles, marketing, finance, organizational structure</p>
+                    </div>
+                    <div class="subject-card" onclick="setSubject('maths'); focusInput();">
+                        <div class="icon">📐</div>
+                        <h3>Mathematics</h3>
+                        <p>Calculus, algebra, probability, statistics, coordinate geometry</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea id="userInput" rows="1"
+                    placeholder="Ask your question... e.g. 'Explain journal entry for goods purchased for cash Rs. 10,000'"
+                    onkeydown="handleKeydown(event)"></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+            <div class="quick-actions" id="quickActions">
+                <span class="quick-tag" onclick="quickAsk('What is the accounting equation?')">Accounting Equation</span>
+                <span class="quick-tag" onclick="quickAsk('Explain diminishing balance method of depreciation')">Depreciation Methods</span>
+                <span class="quick-tag" onclick="quickAsk('How to prepare a Bank Reconciliation Statement?')">Bank Reconciliation</span>
+                <span class="quick-tag" onclick="quickAsk('Difference between fixed and fluctuating capital in partnership')">Partnership Capital</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+var currentSubject = 'accountancy';
+var messages = [];
+var conversationHistory = [];
+try { conversationHistory = JSON.parse(localStorage.getItem('ca_chats') || '[]'); } catch(e) { conversationHistory = []; }
+var currentChatId = Date.now().toString();
+var isProcessing = false;
+
+var subjectConfig = {
+    accountancy: {
+        title: 'Accountancy Tutor',
+        badge: 'Accountancy',
+        badgeClass: 'badge-subject',
+        icon: '📊',
+        quickTags: [
+            { label: 'Accounting Equation', q: 'What is the accounting equation?' },
+            { label: 'Depreciation Methods', q: 'Explain diminishing balance method of depreciation' },
+            { label: 'Bank Reconciliation', q: 'How to prepare a Bank Reconciliation Statement?' },
+            { label: 'Partnership Capital', q: 'Difference between fixed and fluctuating capital in partnership' },
+            { label: 'Company Final Accounts', q: 'How to prepare final accounts of a company?' },
+            { label: 'Cash Flow Statement', q: 'What is a cash flow statement and how is it prepared?' }
+        ]
+    },
+    economics: {
+        title: 'Economics Tutor',
+        badge: 'Economics',
+        badgeClass: 'badge-subject',
+        icon: '📈',
+        quickTags: [
+            { label: 'Law of Demand', q: 'Explain the law of demand' },
+            { label: 'Elasticity', q: 'What is price elasticity of demand?' },
+            { label: 'GDP Calculation', q: 'How is GDP calculated?' },
+            { label: 'Monetary Policy', q: 'What is monetary policy?' },
+            { label: 'Fiscal Policy', q: 'What is fiscal policy?' },
+            { label: 'Balance of Payments', q: 'Explain balance of payments' }
+        ]
+    },
+    business: {
+        title: 'Business Studies Tutor',
+        badge: 'Business Studies',
+        badgeClass: 'badge-subject',
+        icon: '🏢',
+        quickTags: [
+            { label: 'Management Functions', q: 'What are the functions of management?' },
+            { label: 'SWOT Analysis', q: 'What is SWOT analysis?' },
+            { label: 'Marketing Mix', q: 'Explain the marketing mix (4 Ps)' },
+            { label: 'Capital Structure', q: 'What is capital structure in financial management?' },
+            { label: 'Leadership Styles', q: 'What are the different styles of leadership?' },
+            { label: 'Consumer Rights', q: 'What are consumer rights under the Consumer Protection Act?' }
+        ]
+    },
+    maths: {
+        title: 'Mathematics Tutor',
+        badge: 'Mathematics',
+        badgeClass: 'badge-subject',
+        icon: '📐',
+        quickTags: [
+            { label: 'Differentiation', q: 'Explain differentiation with rules and examples' },
+            { label: 'Integration', q: 'Explain integration with basic formulas' },
+            { label: 'Probability', q: 'What is probability and how is it calculated?' },
+            { label: 'Matrices', q: 'What are matrices and how to multiply them?' },
+            { label: 'Linear Programming', q: 'What is linear programming?' },
+            { label: 'Conic Sections', q: 'Explain conic sections' }
+        ]
+    },
+    admin: {
+        title: 'Academy Support',
+        badge: 'Administration',
+        badgeClass: 'badge-admin',
+        icon: '🎓',
+        quickTags: [
+            { label: 'Fee Payment', q: 'How do I pay fees?' },
+            { label: 'Class Timings', q: 'What are the class timings?' },
+            { label: 'Exam Schedule', q: 'What is the exam schedule?' },
+            { label: 'Study Material', q: 'How do I get study material?' },
+            { label: 'Contact Teacher', q: 'How can I contact my teacher?' },
+            { label: 'Batch Details', q: 'What batches are available?' }
+        ]
+    },
+    general: {
+        title: 'General Help',
+        badge: 'General',
+        badgeClass: 'badge-general',
+        icon: '💬',
+        quickTags: [
+            { label: 'Study Tips', q: 'Give me study tips for board exams' },
+            { label: 'Exam Strategy', q: 'What is the best exam strategy for Class 12 commerce?' },
+            { label: 'Career Options', q: 'What are career options after Class 12 commerce?' },
+            { label: 'Time Management', q: 'How to manage time during board exam preparation?' },
+            { label: 'Stress Management', q: 'How to manage stress during exams?' }
+        ]
+    }
+};
+
+var knowledgeBase = {
+    accountancy: {
+        'accounting equation': {
+            answer: 'The Accounting Equation is the foundation of double-entry bookkeeping.',
+            steps: [
+                { title: 'The Basic Equation', content: 'Assets = Liabilities + Capital (Owner\'s Equity)' },
+                { title: 'Expanded Form', content: 'Assets = Liabilities + Capital + (Revenue - Expenses) - Drawings' },
+                { title: 'Key Rule', content: 'Every transaction affects at least two accounts, keeping the equation balanced.' }
+            ],
+            example: 'Example: Started business with cash Rs. 1,00,000\n→ Cash (Asset) increases Rs. 1,00,000 = Capital increases Rs. 1,00,000',
+            tip: 'Remember: Left side (Assets) always equals Right side (Liabilities + Capital). Every debit has a corresponding credit.'
+        },
+        'journal entry': {
+            answer: 'A Journal Entry records transactions chronologically in the books of accounts.',
+            steps: [
+                { title: 'Step 1: Identify Accounts', content: 'Determine which two (or more) accounts are affected.' },
+                { title: 'Step 2: Classify', content: 'Classify as Personal, Real, or Nominal account.' },
+                { title: 'Step 3: Apply Golden Rules', content: 'Personal: Debit the receiver, Credit the giver. Real: Debit what comes in, Credit what goes out. Nominal: Debit all expenses/losses, Credit all incomes/gains.' },
+                { title: 'Step 4: Record', content: 'Write the entry with narration (brief explanation).' }
+            ],
+            example: 'Example: Purchased goods for cash Rs. 10,000\n→ Purchases A/c Dr.  Rs. 10,000\n   To Cash A/c         Rs. 10,000\n   (Being goods purchased for cash)',
+            tip: 'Always write "Dr." on the debit side. The word "To" is used before every credit account.'
+        },
+        'depreciation': {
+            answer: 'Depreciation is the systematic allocation of the cost of a fixed asset over its useful life.',
+            steps: [
+                { title: 'Straight Line Method (SLM)', content: 'Depreciation = (Cost - Scrap Value) / Useful Life. Same amount every year.' },
+                { title: 'Written Down Value (WDV)', content: 'Also called Diminishing Balance Method. Depreciation is calculated on the written down value (book value) each year. Rate remains constant, amount decreases.' },
+                { title: 'WDV Formula', content: 'Depreciation = Book Value at Beginning of Year × Rate%' }
+            ],
+            example: 'Example (WDV): Machinery Rs. 1,00,000, Rate 10%\nYear 1: Rs. 1,00,000 × 10% = Rs. 10,000 → WDV = Rs. 90,000\nYear 2: Rs. 90,000 × 10% = Rs. 9,000 → WDV = Rs. 81,000',
+            tip: 'SLM is simpler but WDV is more realistic as assets lose more value in early years.'
+        },
+        'diminishing': {
+            answer: 'The Diminishing Balance Method (also called Written Down Value / WDV method) calculates depreciation on the reducing book value each year.',
+            steps: [
+                { title: 'Formula', content: 'Depreciation = Book Value at Start of Year × Rate%' },
+                { title: 'Key Feature', content: 'The depreciation amount decreases each year because the book value (base) keeps reducing.' },
+                { title: 'Asset never fully written off', content: 'Under WDV, the book value never reaches zero (it keeps reducing but never becomes nil).' }
+            ],
+            example: 'Example: Asset cost Rs. 1,00,000, Rate 20% p.a.\nYear 1: Rs. 1,00,000 × 20% = Rs. 20,000; WDV = Rs. 80,000\nYear 2: Rs. 80,000 × 20% = Rs. 16,000; WDV = Rs. 64,000\nYear 3: Rs. 64,000 × 20% = Rs. 12,800; WDV = Rs. 51,200',
+            tip: 'WDV method is prescribed by Income Tax Act in India. SLM is preferred for accounting purposes when asset usage is uniform.'
+        },
+        'bank reconciliation': {
+            answer: 'A Bank Reconciliation Statement (BRS) reconciles the difference between bank balance as per Cash Book and Pass Book (bank statement).',
+            steps: [
+                { title: 'Step 1: Compare', content: 'Compare entries in Cash Book (maintained by business) with Pass Book (issued by bank).' },
+                { title: 'Step 2: Identify Differences', content: 'Common differences: Cheques issued but not presented, Cheques deposited but not cleared, Bank charges, Interest credited by bank, Direct deposits/withdrawals, Errors.' },
+                { title: 'Step 3: Start with Cash Book Balance', content: 'Add items credited by bank not in Cash Book (e.g. interest). Deduct items debited by bank not in Cash Book (e.g. bank charges).' },
+                { title: 'Step 4: Arrive at Pass Book Balance', content: 'Add cheques issued but not yet presented. Deduct cheques deposited but not yet cleared.' }
+            ],
+            example: 'Cash Book Balance: Rs. 50,000\n+ Cheques deposited but not cleared: Rs. 5,000\n- Cheques issued but not presented: Rs. 8,000\n+ Bank charges in pass book only: Rs. 200\n= Adjusted Balance (Pass Book): Rs. 47,200',
+            tip: 'Always start with the balance you know and adjust for items recorded in the other book only.'
+        },
+        'partnership': {
+            answer: 'A Partnership is a business arrangement between two or more persons who agree to share profits and losses.',
+            steps: [
+                { title: 'Fixed Capital Method', content: 'Capital remains constant each year. All adjustments (interest on capital, salary, profit share) are made in a separate Current Account.' },
+                { title: 'Fluctuating Capital Method', content: 'No separate Current Account. All adjustments are made directly in the Capital Account, which changes every year.' },
+                { title: 'Profit Sharing Ratio', content: 'Profits and losses are shared in the agreed ratio. If no agreement exists, they are shared equally.' }
+            ],
+            example: 'Fixed Capital Example:\nA and B with capitals Rs. 1,00,000 and Rs. 80,000\nProfit Rs. 36,000 shared in ratio 3:2\n→ A\'s Current A/c Cr. Rs. 21,600\n   B\'s Current A/c Cr. Rs. 14,400',
+            tip: 'Fixed capital method gives a clearer picture of original investment and is preferred for larger partnerships.'
+        },
+        'fixed capital': {
+            answer: 'Under Fixed Capital method, each partner\'s capital remains constant. Adjustments like interest on capital, salary, drawings, and profit share go into a separate Current Account.',
+            steps: [
+                { title: 'Capital Account', content: 'Shows only the fixed capital contributed. Remains unchanged year after year unless additional capital is brought in or capital is withdrawn permanently.' },
+                { title: 'Current Account', content: 'Records: Interest on Capital (Cr), Partner\'s Salary (Cr), Share of Profit (Cr), Interest on Drawings (Dr), Drawings (Dr), Share of Loss (Dr).' },
+                { title: 'Final Balance', content: 'At year end, Current Account balance (Dr or Cr) reflects the net position of the partner beyond the fixed capital.' }
+            ],
+            example: 'Partner A: Fixed Capital = Rs. 2,00,000 (unchanged)\nCurrent A/c:\nInterest on Capital: +Rs. 20,000\nSalary: +Rs. 30,000\nShare of Profit: +Rs. 25,000\nDrawings: -Rs. 40,000\nNet Current A/c Balance: +Rs. 35,000',
+            tip: 'In fixed capital method, if the Current Account has a debit balance, it means the partner has drawn more than their entitlement.'
+        },
+        'fluctuating capital': {
+            answer: 'Under Fluctuating Capital method, there is only one Capital Account per partner. All adjustments are made directly in this account, so the balance changes every year.',
+            steps: [
+                { title: 'Single Account', content: 'No Current Account. The Capital Account includes: capital brought in, interest on capital, salary, share of profit minus drawings, interest on drawings, share of loss.' },
+                { title: 'Entries in Capital Account', content: 'Credit side: Capital introduced, Interest on Capital, Partner Salary, Share of Profit. Debit side: Drawings, Interest on Drawings, Share of Loss.' },
+                { title: 'Balance', content: 'The closing balance of the Capital Account is carried forward as the opening balance next year.' }
+            ],
+            example: 'Partner B\'s Capital A/c:\nOpening Balance: Rs. 1,00,000\n+ Interest on Capital: Rs. 10,000\n+ Share of Profit: Rs. 18,000\n- Drawings: Rs. 25,000\nClosing Capital Balance: Rs. 1,03,000',
+            tip: 'Fluctuating capital is simpler to maintain but makes it harder to track the original capital investment over time.'
+        },
+        'cash flow': {
+            answer: 'A Cash Flow Statement shows inflows and outflows of cash during a period under three activities: Operating, Investing, and Financing.',
+            steps: [
+                { title: 'Operating Activities', content: 'Cash flows from main business operations. Includes receipts from customers, payments to suppliers, salaries paid, taxes paid. Start with Net Profit and adjust for non-cash items.' },
+                { title: 'Investing Activities', content: 'Cash flows from purchase/sale of long-term assets. E.g. purchase of machinery (outflow), sale of investments (inflow).' },
+                { title: 'Financing Activities', content: 'Cash flows related to capital and borrowings. E.g. issue of shares (inflow), repayment of loan (outflow), dividend paid (outflow).' }
+            ],
+            example: 'Net Cash from Operating Activities: Rs. 80,000\nNet Cash from Investing Activities: -Rs. 50,000\nNet Cash from Financing Activities: Rs. 20,000\nNet Increase in Cash: Rs. 50,000\nOpening Cash Balance: Rs. 30,000\nClosing Cash Balance: Rs. 80,000',
+            tip: 'Indirect method for operating activities starts with net profit and adds back non-cash items like depreciation. Direct method shows actual cash receipts and payments.'
+        },
+        'final accounts': {
+            answer: 'Final Accounts of a company include: Trading Account, Profit & Loss Account, and Balance Sheet (for Class 11) or Statement of Profit & Loss and Balance Sheet as per Schedule III (for Class 12).',
+            steps: [
+                { title: 'Trading Account', content: 'Shows Gross Profit or Loss. Opens with Opening Stock, add Purchases and Direct Expenses, deduct Closing Stock and Sales.' },
+                { title: 'Profit & Loss Account', content: 'Shows Net Profit or Loss. Gross Profit transferred, then all indirect expenses deducted and indirect incomes added.' },
+                { title: 'Balance Sheet', content: 'Shows financial position. Left side: Liabilities (Capital, Loans, Creditors). Right side: Assets (Fixed Assets, Current Assets).' }
+            ],
+            example: 'Gross Profit = Sales - Cost of Goods Sold\nCost of Goods Sold = Opening Stock + Purchases - Closing Stock\nNet Profit = Gross Profit + Other Income - Operating Expenses - Depreciation - Taxes',
+            tip: 'For Class 12, the format follows Companies Act 2013 Schedule III. Assets are listed by liquidity (least liquid first: Non-current Assets, then Current Assets).'
+        }
+    },
+    economics: {
+        'law of demand': {
+            answer: 'The Law of Demand states that, other things being equal (ceteris paribus), as the price of a good falls, the quantity demanded rises, and vice versa.',
+            steps: [
+                { title: 'Inverse Relationship', content: 'Price and Quantity Demanded move in opposite directions.' },
+                { title: 'Assumptions (Ceteris Paribus)', content: 'Income, tastes, prices of related goods, and future expectations remain constant.' },
+                { title: 'Demand Curve', content: 'Downward sloping from left to right. The slope is negative.' },
+                { title: 'Exceptions', content: 'Giffen goods (inferior goods), Veblen goods (luxury/status symbols), Expectation of future price rise.' }
+            ],
+            example: 'Example: Price of apples falls from Rs. 100/kg to Rs. 80/kg → consumers buy more apples.\n\nAt Price Rs. 100 → Demand 50 kg\nAt Price Rs. 80  → Demand 70 kg',
+            tip: 'Do not confuse "change in demand" (shift of curve due to income/taste change) with "change in quantity demanded" (movement along the curve due to price change).'
+        },
+        'price elasticity': {
+            answer: 'Price Elasticity of Demand (PED) measures how responsive the quantity demanded is to a change in price.',
+            steps: [
+                { title: 'Formula', content: 'PED = % Change in Quantity Demanded / % Change in Price' },
+                { title: 'Types by Value', content: 'Elastic (PED > 1): Luxury goods. Inelastic (PED < 1): Necessities. Unitary (PED = 1): Proportionate change. Perfectly Elastic (PED = ∞): Horizontal demand curve. Perfectly Inelastic (PED = 0): Vertical demand curve.' },
+                { title: 'Factors Affecting Elasticity', content: 'Availability of substitutes, Nature of good (necessity vs luxury), Proportion of income spent, Time period of adjustment.' }
+            ],
+            example: 'Example: Price of petrol rises by 10%, demand falls by 2%\nPED = 2% / 10% = 0.2\nSince PED < 1 → Inelastic demand (people still need petrol)',
+            tip: 'Revenue tip: If demand is elastic, lowering price increases total revenue. If inelastic, raising price increases total revenue.'
+        },
+        'gdp': {
+            answer: 'GDP (Gross Domestic Product) is the total monetary value of all final goods and services produced within a country\'s borders in a given time period.',
+            steps: [
+                { title: 'Expenditure Method', content: 'GDP = C + I + G + (X - M)\nC = Private Consumption, I = Investment, G = Government Spending, X = Exports, M = Imports' },
+                { title: 'Income Method', content: 'GDP = Wages + Rent + Interest + Profit + Mixed Income + Depreciation + Net Indirect Taxes' },
+                { title: 'Value Added Method', content: 'GDP = Sum of Gross Value Added by all producing units in the economy' }
+            ],
+            example: 'India\'s GDP is calculated quarterly by the National Statistical Office (NSO) using all three methods.\n\nGDP at Factor Cost = GDP at Market Price - Net Indirect Taxes\nNNP = GNP - Depreciation\nNational Income = NNP at Factor Cost',
+            tip: 'GDP measures production within borders regardless of who owns the resources. GNP measures production by a country\'s residents regardless of location.'
+        },
+        'monetary policy': {
+            answer: 'Monetary Policy refers to actions taken by the Reserve Bank of India (RBI) to control the money supply and credit in the economy to achieve macroeconomic goals.',
+            steps: [
+                { title: 'Objective', content: 'Control inflation, ensure adequate credit flow, maintain exchange rate stability, and support economic growth.' },
+                { title: 'Quantitative Tools', content: 'Bank Rate (rate at which RBI lends to commercial banks), Repo Rate (rate for short-term borrowing), CRR (Cash Reserve Ratio - % of deposits kept with RBI), SLR (Statutory Liquidity Ratio - % held in govt securities).' },
+                { title: 'Qualitative Tools', content: 'Margin requirements, moral suasion, credit rationing, direct action.' }
+            ],
+            example: 'If inflation is high → RBI increases Repo Rate → Banks borrow less → Credit becomes expensive → People borrow less → Spending decreases → Inflation comes down.',
+            tip: 'Repo Rate and CRR are the most important tools. Higher Repo Rate = contractionary policy (reduces money supply). Lower Repo Rate = expansionary policy (increases money supply).'
+        },
+        'fiscal policy': {
+            answer: 'Fiscal Policy refers to the government\'s use of taxation and public expenditure to influence the economy.',
+            steps: [
+                { title: 'Tools of Fiscal Policy', content: 'Government Expenditure (spending on infrastructure, welfare, defence) and Taxation (direct taxes like income tax, indirect taxes like GST).' },
+                { title: 'Expansionary Fiscal Policy', content: 'Increase government spending and/or decrease taxes → increases aggregate demand → used during recession.' },
+                { title: 'Contractionary Fiscal Policy', content: 'Decrease government spending and/or increase taxes → reduces aggregate demand → used during inflation.' }
+            ],
+            example: 'During COVID-19, India used expansionary fiscal policy:\n- Increased healthcare spending\n- Provided food subsidies (PM Garib Kalyan)\n- Announced stimulus packages for businesses',
+            tip: 'Fiscal policy is implemented by the Ministry of Finance through the Union Budget. Monetary policy is implemented by RBI. Both work together for economic stability.'
+        },
+        'balance of payments': {
+            answer: 'The Balance of Payments (BoP) is a systematic record of all economic transactions between residents of a country and the rest of the world during a given period.',
+            steps: [
+                { title: 'Current Account', content: 'Records trade in goods (visible trade/merchandise), trade in services (invisible trade), and transfer payments (remittances, aid).' },
+                { title: 'Capital Account', content: 'Records transactions in financial assets: FDI (Foreign Direct Investment), FII (Foreign Institutional Investment), External borrowings, Banking capital.' },
+                { title: 'Balance', content: 'BoP always balances technically. A deficit in current account is financed by surplus in capital account, or by drawing down foreign exchange reserves.' }
+            ],
+            example: 'India\'s BoP:\nCurrent Account: Trade deficit (imports > exports)\nCapital Account: Surplus (FDI + FII inflows)\nResult: Overall BoP may be in surplus if capital inflows exceed current account deficit.',
+            tip: 'Trade Balance (only goods) is different from Current Account Balance (goods + services + transfers). India typically has a trade deficit but earns through software services exports.'
+        }
+    },
+    business: {
+        'management functions': {
+            answer: 'Management has five core functions that managers perform to achieve organisational goals.',
+            steps: [
+                { title: '1. Planning', content: 'Deciding in advance: what to do, how to do, when, and by whom. It is the primary and most fundamental function of management.' },
+                { title: '2. Organizing', content: 'Arranging resources and tasks into a workable structure. Involves departmentalization, delegation of authority, and defining relationships.' },
+                { title: '3. Staffing', content: 'Ensuring the right people are in the right jobs. Covers recruitment, selection, training, placement, and appraisal.' },
+                { title: '4. Directing', content: 'Guiding and motivating employees to work towards goals. Includes leadership, communication, supervision, and motivation.' },
+                { title: '5. Controlling', content: 'Measuring actual performance, comparing with standards, and taking corrective action when needed.' }
+            ],
+            example: 'School Principal Example:\nPlanning: Sets academic calendar for the year\nOrganizing: Assigns teachers to subjects and classes\nStaffing: Hires new teachers, conducts training\nDirecting: Motivates staff, resolves conflicts\nControlling: Reviews exam results vs. targets',
+            tip: 'These functions are continuous and overlapping. Planning without controlling is meaningless. Controlling always leads back to revised planning.'
+        },
+        'marketing mix': {
+            answer: 'The Marketing Mix (4 Ps) is the set of controllable tools a company uses to influence its target market and achieve marketing objectives.',
+            steps: [
+                { title: 'Product', content: 'What you sell. Includes quality, design, features, brand name, packaging, warranty, and after-sales service.' },
+                { title: 'Price', content: 'What you charge. Includes list price, discounts, credit terms, and payment period. Must reflect value and competitive positioning.' },
+                { title: 'Place (Distribution)', content: 'How you deliver to customers. Includes channels (wholesalers, retailers, direct, online), coverage, inventory management, and logistics.' },
+                { title: 'Promotion', content: 'How you communicate. Includes advertising, sales promotion, personal selling, and public relations.' }
+            ],
+            example: 'New Smartphone Launch Example:\nProduct: 5G phone, 128GB, dual camera, AMOLED display\nPrice: Rs. 25,000 (competitive pricing vs rivals)\nPlace: Flipkart, Amazon + retail stores in Tier 1 cities\nPromotion: YouTube ads, influencer reviews, launch event',
+            tip: 'For service businesses, extend to 7 Ps by adding: People (staff quality), Process (service delivery), and Physical Evidence (tangible cues like ambience, uniforms).'
+        },
+        'swot': {
+            answer: 'SWOT Analysis is a strategic planning tool used to identify internal Strengths and Weaknesses, and external Opportunities and Threats facing an organisation.',
+            steps: [
+                { title: 'Strengths (Internal)', content: 'What the organisation does well. E.g. strong brand, loyal customers, skilled workforce, proprietary technology.' },
+                { title: 'Weaknesses (Internal)', content: 'Areas where the organisation is at a disadvantage. E.g. high costs, poor distribution, outdated technology.' },
+                { title: 'Opportunities (External)', content: 'Favourable external conditions. E.g. growing market, new technology, favourable government policy, competitor weakness.' },
+                { title: 'Threats (External)', content: 'Unfavourable external conditions. E.g. new competition, changing regulations, economic slowdown, changing consumer preferences.' }
+            ],
+            example: 'SWOT of Amul:\nStrengths: Strong brand, cooperative model, pan-India reach\nWeaknesses: Limited premium product range\nOpportunities: Growing demand for dairy in exports, health products\nThreats: MNC dairy brands, rising feed costs',
+            tip: 'SWOT is used to build strategy: use Strengths to exploit Opportunities, use Strengths to counter Threats, fix Weaknesses before Threats materialise.'
+        },
+        'leadership': {
+            answer: 'Leadership is the process of influencing others to work willingly and enthusiastically towards achieving group goals.',
+            steps: [
+                { title: 'Autocratic/Authoritarian Style', content: 'Leader takes all decisions alone. No employee participation. Works well in emergencies or with unskilled workers. Leads to low morale if overused.' },
+                { title: 'Democratic/Participative Style', content: 'Leader consults the group before deciding. Builds morale and creativity. Works best with skilled, motivated employees.' },
+                { title: 'Laissez-Faire/Free-Rein Style', content: 'Leader gives complete freedom to subordinates. Suitable for highly skilled, self-motivated professionals like researchers or artists.' }
+            ],
+            example: 'Ratan Tata: Democratic style — consulted employees, encouraged innovation.\nSteve Jobs (early Apple): Autocratic — had a strong personal vision, demanded perfection.\nWarren Buffett at Berkshire: Laissez-Faire — gives subsidiary CEOs complete freedom.',
+            tip: 'No single style is universally best. Effective leaders adapt their style based on the situation, team maturity, and urgency of the task.'
+        },
+        'consumer rights': {
+            answer: 'The Consumer Protection Act 2019 provides six fundamental rights to consumers in India.',
+            steps: [
+                { title: 'Right to Safety', content: 'Protection against goods and services that are hazardous to life and property.' },
+                { title: 'Right to Information', content: 'Right to be informed about quality, quantity, purity, standard, and price of goods.' },
+                { title: 'Right to Choose', content: 'Access to a variety of goods and services at competitive prices.' },
+                { title: 'Right to be Heard', content: 'Consumer interests will receive due consideration in appropriate forums.' },
+                { title: 'Right to Seek Redressal', content: 'Right to seek remedy against unfair trade practices or exploitation.' },
+                { title: 'Right to Consumer Education', content: 'Right to acquire knowledge and skills to be an informed consumer.' }
+            ],
+            example: 'Where to file a complaint:\nDistrict Commission: Claims up to Rs. 1 crore\nState Commission: Claims Rs. 1 crore to Rs. 10 crore\nNational Commission: Claims above Rs. 10 crore',
+            tip: 'The Consumer Protection Act 2019 replaced the 1986 Act. Key addition: e-commerce complaints can now be filed online. Time limit for filing complaint: within 2 years of the cause.'
+        },
+        'capital structure': {
+            answer: 'Capital Structure refers to the mix of long-term sources of funds used by a company — mainly equity (shareholders\' funds) and debt (borrowed funds).',
+            steps: [
+                { title: 'Equity Capital', content: 'Funds raised by issuing shares. No fixed payment obligation. Shareholders are owners. Higher risk for investors → higher expected return.' },
+                { title: 'Debt Capital', content: 'Funds raised through loans, debentures. Fixed interest obligation regardless of profit. Tax-deductible interest is an advantage.' },
+                { title: 'Optimal Capital Structure', content: 'The mix that minimises the overall cost of capital (WACC) and maximises the firm\'s value. Depends on: cash flow stability, asset nature, tax position, risk tolerance.' }
+            ],
+            example: 'Company A raises Rs. 50 lakh:\nEquity: Rs. 30 lakh (60%) — no fixed obligation\nDebt: Rs. 20 lakh (40%) — interest @10% = Rs. 2 lakh/year\n\nTrade-off: Debt is cheaper (tax benefit) but increases financial risk.',
+            tip: 'Financial Leverage: Using more debt increases EPS when returns > interest rate (trading on equity). But it also increases financial risk during downturns.'
+        }
+    },
+    maths: {
+        'differentiation': {
+            answer: 'Differentiation is the process of finding the derivative of a function, which represents the instantaneous rate of change.',
+            steps: [
+                { title: 'Power Rule', content: 'If y = x^n, then dy/dx = n * x^(n-1)' },
+                { title: 'Constant Rule', content: 'Derivative of a constant is 0. d/dx(c) = 0' },
+                { title: 'Sum / Difference Rule', content: 'd/dx(u ± v) = du/dx ± dv/dx' },
+                { title: 'Product Rule', content: 'd/dx(u*v) = u * dv/dx + v * du/dx' },
+                { title: 'Quotient Rule', content: 'd/dx(u/v) = [v * du/dx - u * dv/dx] / v^2' },
+                { title: 'Chain Rule', content: 'd/dx[f(g(x))] = f\'(g(x)) * g\'(x)' }
+            ],
+            example: 'Find dy/dx if y = 3x^4 + 2x^2 - 5x + 7\n\ndy/dx = 3*(4x^3) + 2*(2x) - 5*(1) + 0\n      = 12x^3 + 4x - 5',
+            tip: 'Always reduce the power by 1 when applying the power rule. Practice the chain rule with composite functions like sin(x^2) or e^(3x).'
+        },
+        'integration': {
+            answer: 'Integration is the reverse process of differentiation. It finds the area under a curve or the original function from its derivative.',
+            steps: [
+                { title: 'Power Rule of Integration', content: 'Integral of x^n = x^(n+1) / (n+1) + C, where n ≠ -1' },
+                { title: 'Standard Integrals', content: 'Integral of e^x = e^x + C\nIntegral of 1/x = ln|x| + C\nIntegral of sin x = -cos x + C\nIntegral of cos x = sin x + C' },
+                { title: 'Definite Integral', content: 'Has limits [a, b]. Result is a number (area), not a function. = F(b) - F(a) where F is the antiderivative.' }
+            ],
+            example: 'Find the integral of (3x^2 + 4x - 2) dx\n\n= 3*(x^3/3) + 4*(x^2/2) - 2x + C\n= x^3 + 2x^2 - 2x + C',
+            tip: 'Always add the constant of integration C for indefinite integrals. Check your answer by differentiating it — you should get back the original function.'
+        },
+        'probability': {
+            answer: 'Probability measures the likelihood of an event occurring. It ranges from 0 (impossible) to 1 (certain).',
+            steps: [
+                { title: 'Basic Formula', content: 'P(E) = Number of favourable outcomes / Total number of possible outcomes' },
+                { title: 'Addition Rule', content: 'P(A or B) = P(A) + P(B) - P(A and B)  [for non-mutually exclusive events]\nP(A or B) = P(A) + P(B)  [for mutually exclusive events]' },
+                { title: 'Multiplication Rule', content: 'P(A and B) = P(A) * P(B|A)  [dependent events]\nP(A and B) = P(A) * P(B)  [independent events]' },
+                { title: 'Complementary Events', content: 'P(E\') = 1 - P(E)' }
+            ],
+            example: 'A bag has 5 red and 3 blue balls.\n\nP(Red) = 5/8 = 0.625\nP(Blue) = 3/8 = 0.375\n\nP(at least one red in 2 draws with replacement)\n= 1 - P(no red) = 1 - (3/8)^2 = 1 - 9/64 = 55/64',
+            tip: 'For "at least one" problems, always use the complement: P(at least one) = 1 - P(none). It is almost always simpler.'
+        },
+        'matrices': {
+            answer: 'A Matrix is a rectangular array of numbers arranged in rows and columns. Matrices are used to represent and solve systems of linear equations.',
+            steps: [
+                { title: 'Order of a Matrix', content: 'A matrix with m rows and n columns is called an m × n matrix. Element at row i, column j is denoted a(ij).' },
+                { title: 'Matrix Addition/Subtraction', content: 'Only possible if matrices have the same order. Add/subtract corresponding elements.' },
+                { title: 'Matrix Multiplication', content: 'A (m×n) * B (n×p) = C (m×p). Element c(ij) = sum of products of row i of A with column j of B. Note: AB ≠ BA in general.' },
+                { title: 'Transpose', content: 'A\' (or A^T) is formed by interchanging rows and columns. If A is m×n, then A\' is n×m.' }
+            ],
+            example: 'A = [1 2; 3 4], B = [5 6; 7 8]\n\nA*B = [(1*5+2*7) (1*6+2*8); (3*5+4*7) (3*6+4*8)]\n    = [(5+14) (6+16); (15+28) (18+32)]\n    = [19 22; 43 50]',
+            tip: 'Matrix multiplication is associative: (AB)C = A(BC). But it is NOT commutative: AB ≠ BA. Always check dimensions before multiplying.'
+        },
+        'linear programming': {
+            answer: 'Linear Programming (LP) is a mathematical method for optimising (maximising or minimising) a linear objective function subject to linear constraints.',
+            steps: [
+                { title: 'Step 1: Formulate the Problem', content: 'Identify decision variables (x, y). Write the objective function (maximise profit or minimise cost). List all constraints as linear inequalities.' },
+                { title: 'Step 2: Graph the Constraints', content: 'Convert inequalities to equations and plot on a graph. Shade the feasible region satisfying all constraints.' },
+                { title: 'Step 3: Find Corner Points', content: 'Identify the vertices (corner points) of the feasible region.' },
+                { title: 'Step 4: Evaluate Objective Function', content: 'Substitute each corner point into the objective function. The maximum or minimum value gives the optimal solution.' }
+            ],
+            example: 'Maximise Z = 5x + 4y\nSubject to: 6x + 4y ≤ 24, x + 2y ≤ 6, x ≥ 0, y ≥ 0\n\nCorner points: (0,0), (4,0), (3,1.5), (0,3)\nZ at (0,0) = 0; Z at (4,0) = 20; Z at (3,1.5) = 21; Z at (0,3) = 12\nMaximum Z = 21 at point (3, 1.5)',
+            tip: 'The optimal solution always occurs at a corner point (vertex) of the feasible region. If two adjacent corner points give the same maximum/minimum, every point on that edge is also optimal.'
+        }
+    },
+    admin: {
+        'fee': {
+            answer: 'Fee Structure and Payment Information for Commerce Academy.',
+            steps: [
+                { title: 'Payment Methods', content: 'Online: UPI, Net Banking, Credit/Debit Card. Offline: Cash or Cheque at the academy office.' },
+                { title: 'Installment Options', content: 'Fees can be paid in quarterly installments (every 3 months). A late fee of Rs. 100 per week applies after the due date.' },
+                { title: 'Fee Receipt', content: 'Digital receipts are sent via WhatsApp/SMS within 24 hours of payment. Physical receipts are available on request.' }
+            ],
+            example: 'For fee-related queries, contact:\nOffice Phone: [Academy Phone]\nEmail: fees@commerceacademy.com\nOffice Hours: 9 AM - 6 PM, Monday to Saturday',
+            tip: 'Keep your fee receipts safe — they are required for exam registration and certificate issuance.'
+        },
+        'pay': {
+            answer: 'You can pay your academy fees through multiple methods.',
+            steps: [
+                { title: 'Online Payment', content: 'UPI (Google Pay, PhonePe, Paytm) — scan the QR code at the office or use the UPI ID. Net Banking and debit/credit cards are also accepted.' },
+                { title: 'Offline Payment', content: 'Visit the academy office between 9 AM and 6 PM (Monday to Saturday). Pay by cash or cheque in favour of "Commerce Academy".' },
+                { title: 'Installment Plan', content: 'Quarterly installment option available. Contact the office to set up an installment schedule.' }
+            ],
+            example: 'UPI ID: commerceacademy@upi (example)\nCheque in favour of: Commerce Academy\nOffice: [Address], Timings: 9 AM - 6 PM (Mon-Sat)',
+            tip: 'Always collect and retain the payment receipt. If you do not receive a digital receipt within 24 hours, contact the office immediately.'
+        },
+        'schedule': {
+            answer: 'Class Schedule and Timings for Commerce Academy.',
+            steps: [
+                { title: 'Regular Classes', content: 'Monday to Saturday. Morning Batch: 7 AM - 10 AM. Evening Batch: 4 PM - 7 PM.' },
+                { title: 'Doubt Clearing Sessions', content: 'Every Sunday, 10 AM - 1 PM. No prior appointment needed. Open for all subjects.' },
+                { title: 'Test Series', content: 'Weekly tests every Saturday. Monthly mock tests on the last Sunday of every month.' }
+            ],
+            example: 'Subject-wise Schedule:\nAccountancy: Monday, Wednesday, Friday (8:00 - 9:30 AM)\nEconomics: Tuesday, Thursday, Saturday (8:00 - 9:30 AM)\nBusiness Studies: Monday, Wednesday, Friday (9:30 - 11:00 AM)\nMathematics: Tuesday, Thursday, Saturday (9:30 - 11:00 AM)',
+            tip: 'Attendance of 75% is mandatory to be eligible for internal assessment marks. Inform the office in advance if you need to miss a class.'
+        },
+        'timing': {
+            answer: 'Class timings at Commerce Academy are structured to accommodate both morning and evening learners.',
+            steps: [
+                { title: 'Morning Batch', content: '7:00 AM to 10:00 AM, Monday to Saturday.' },
+                { title: 'Evening Batch', content: '4:00 PM to 7:00 PM, Monday to Saturday.' },
+                { title: 'Sunday Sessions', content: 'Doubt clearing every Sunday, 10 AM to 1 PM. Monthly mock tests on the last Sunday.' }
+            ],
+            example: 'Note: Timing may vary during exam season (pre-boards, unit tests). Check the academy WhatsApp group or notice board for updates.',
+            tip: 'Arrive 5 minutes early to settle in before the class starts. Late entry beyond 10 minutes may be marked absent.'
+        },
+        'batch': {
+            answer: 'Commerce Academy currently offers two batches to suit different schedules.',
+            steps: [
+                { title: 'Morning Batch', content: '7:00 AM - 10:00 AM. Ideal for students who prefer studying early and keeping afternoons free.' },
+                { title: 'Evening Batch', content: '4:00 PM - 7:00 PM. Suitable for students who attend school in the morning.' },
+                { title: 'Batch Switching', content: 'Batch switching is allowed once per quarter, subject to availability. Contact the office for a transfer request.' }
+            ],
+            example: 'To check current batch availability or request a change:\nWhatsApp/Call: [Academy Phone]\nOffice: Visit between 9 AM - 6 PM, Mon-Sat',
+            tip: 'Both batches cover the same syllabus and have the same teachers. Choose based on your personal schedule and energy levels.'
+        },
+        'exam': {
+            answer: 'Examination schedule and pattern for CBSE 2025-26 at Commerce Academy.',
+            steps: [
+                { title: 'Unit Tests', content: 'Conducted after every unit. 25 marks, 1-hour duration. Covers the recently completed chapters.' },
+                { title: 'Half-Yearly Exams', content: 'September 2025. Covers the first 50% of the CBSE syllabus.' },
+                { title: 'Pre-Board Exams', content: 'January 2026. Full syllabus mock tests in CBSE pattern with official marking scheme.' },
+                { title: 'CBSE Board Exams', content: 'February - April 2026 (tentative). 80 marks theory + 20 marks internal assessment / project.' }
+            ],
+            example: 'CBSE Class 12 Commerce Question Paper Pattern (2026):\n- Section A (MCQs): 20% of marks\n- Section B (Competency-based / Case Studies): 50% of marks\n- Section C (Short & Long Answers): 30% of marks\n- Duration: 3 hours',
+            tip: 'Pre-boards are the most important internal exam. Treat them exactly like board exams. Scores are used to predict performance and identify weak areas.'
+        },
+        'material': {
+            answer: 'Study material at Commerce Academy is provided to all enrolled students.',
+            steps: [
+                { title: 'What is Provided', content: 'Chapter-wise notes, formula sheets, past year CBSE papers (last 10 years), sample papers, and topic-wise question banks.' },
+                { title: 'How to Access', content: 'Physical notes are distributed in class. Digital versions (PDFs) are shared in the academy WhatsApp group.' },
+                { title: 'Additional Resources', content: 'NCERT textbooks (mandatory), NCERT Exemplar problems (for Maths), and reference books may be recommended by teachers.' }
+            ],
+            example: 'Study Material Available:\nClass 11: Full chapter notes + NCERT solutions\nClass 12: Notes + Previous Year Papers + Sample Papers + Case Study questions',
+            tip: 'Always prioritise NCERT. CBSE board papers are strictly based on NCERT. Reference books should only supplement, not replace, NCERT.'
+        },
+        'contact': {
+            answer: 'Here is how you can get in touch with your teachers at Commerce Academy.',
+            steps: [
+                { title: 'WhatsApp Group', content: 'All students are added to subject-wise WhatsApp groups. Post your doubt there. Teachers respond within 4 hours on working days.' },
+                { title: 'Sunday Doubt Sessions', content: 'Every Sunday, 10 AM - 1 PM. Walk in for face-to-face doubt solving. No appointment needed.' },
+                { title: 'Office Contact', content: 'For urgent matters, call the office at [Academy Phone] during 9 AM - 6 PM, Monday to Saturday.' }
+            ],
+            example: 'Teacher Availability for Direct Queries:\nAccountancy: [Teacher Name] — Mon to Sat, 2 PM - 4 PM\nEconomics: [Teacher Name] — Mon to Sat, 11 AM - 1 PM\nBusiness Studies: [Teacher Name] — Mon to Sat, 1 PM - 3 PM\nMathematics: [Teacher Name] — Mon to Sat, 3 PM - 5 PM',
+            tip: 'Write down your doubt clearly before reaching out — mention the chapter, topic, and exactly where you are stuck. This helps the teacher give a faster and more accurate answer.'
+        }
+    },
+    general: {
+        'study tips': {
+            answer: 'Effective study strategies for Class 11 and 12 Commerce board exams.',
+            steps: [
+                { title: 'NCERT First, Always', content: 'For Accountancy, Economics, and Business Studies, CBSE papers are almost entirely NCERT-based. Master NCERT before any reference book.' },
+                { title: 'Practice Numericals Daily', content: 'For Accountancy and Maths, solve at least 5-10 problems daily. Understanding comes from doing, not just reading.' },
+                { title: 'Make Short Notes', content: 'After each chapter, write a 1-page summary with key concepts, formulas, and definitions. These are invaluable before exams.' },
+                { title: 'Solve Past Year Papers', content: 'CBSE papers from the last 5-7 years reveal patterns. Questions often repeat in similar formats.' },
+                { title: 'Revise Regularly', content: 'Use the 1-3-7 rule: revise on day 1, day 3, and day 7 after learning something new to move it to long-term memory.' }
+            ],
+            example: 'Suggested Daily Schedule (3-4 hours of self-study):\n1 hour: Complete that day\'s academy topic + notes\n1 hour: Solve problems from the topic\n30 min: Revise yesterday\'s topic\n30 min: Read one NCERT chapter',
+            tip: 'Consistency beats intensity. 2 focused hours every day is far more effective than 8 hours once a week.'
+        },
+        'exam strategy': {
+            answer: 'Smart exam strategy for Class 12 CBSE Commerce board exams.',
+            steps: [
+                { title: 'Attempt in the Right Order', content: 'Start with sections you are most confident about. This builds momentum and ensures you don\'t run out of time on easy questions.' },
+                { title: 'Time Management in Exam', content: '3-hour paper with 80 marks. Spend roughly 2 minutes per mark. Allocate more time to case studies and long answers.' },
+                { title: 'Read Questions Carefully', content: 'CBSE questions are precisely worded. "Distinguish between", "Explain", "State", and "Discuss" all require different depths of answer.' },
+                { title: 'Presentation Matters', content: 'Use headings, bullet points, and diagrams wherever relevant. Leave a line between answers. A well-presented answer scores better.' }
+            ],
+            example: 'For a 3-hour, 80-mark paper:\nSection A (MCQs, 1 mark each): 15-20 min\nSection B (Case studies, 3-4 marks): 40-50 min\nSection C (Short answers, 3-5 marks): 40-50 min\nSection D (Long answers, 6-8 marks): 50-60 min\nRevision: 15-20 min',
+            tip: 'Never leave blanks. If unsure, attempt the question — partial credit is available for partially correct answers in theory subjects.'
+        },
+        'career options': {
+            answer: 'Class 12 Commerce opens up a wide range of career paths across finance, business, law, and technology.',
+            steps: [
+                { title: 'Finance & Accounting', content: 'CA (Chartered Accountant), CMA, CS (Company Secretary), CFA, banking careers, financial analysis.' },
+                { title: 'Management & Business', content: 'BBA → MBA, entrepreneurship, marketing, HR, operations management.' },
+                { title: 'Economics & Policy', content: 'BA/BSc Economics, IAS/IPS (Civil Services), RBI Grade B, economic research.' },
+                { title: 'Law', content: 'BA LLB with commerce background is excellent for corporate law, taxation, and intellectual property.' },
+                { title: 'Technology + Commerce', content: 'BBA in Digital Marketing, FinTech roles, data analytics in business, e-commerce management.' }
+            ],
+            example: 'Popular paths after Class 12 Commerce:\nCA Foundation → CA → Big 4 firms, CFO roles\nBCom → MBA (IIM, XLRI) → Corporate careers\nBBA → Startup, Marketing, Consulting\nBA Eco → Civil Services, World Bank, RBI',
+            tip: 'If you enjoy numbers: consider CA or CFA. If you prefer people and strategy: MBA is ideal. If you are interested in policy: Economics honours + Civil Services is a strong path.'
+        },
+        'time management': {
+            answer: 'Effective time management during board exam preparation.',
+            steps: [
+                { title: 'Create a Realistic Timetable', content: 'Divide your day into study blocks of 45-60 minutes each with 10-minute breaks. Cover all subjects across the week.' },
+                { title: 'Prioritise by Weightage', content: 'Allocate more time to high-weightage chapters. In Accountancy, Partnership and Company Accounts carry the most marks.' },
+                { title: 'Track Your Progress', content: 'At the end of each week, review what was covered vs. planned. Adjust the upcoming week accordingly.' },
+                { title: 'Protect Your Sleep', content: 'A minimum of 7-8 hours of sleep is non-negotiable. Sleep is when memory consolidation happens.' }
+            ],
+            example: 'Sample Weekly Timetable:\nMon-Sat: Academy class (3 hours) + Self-study (3 hours)\nSunday: Doubt session (3 hours) + Weekly test review (1 hour) + Rest\nEvening: Revise morning\'s topic for 30 minutes before sleeping',
+            tip: 'Start with the hardest subject when your mind is freshest (usually morning). Save lighter revision tasks for evenings when energy dips.'
+        },
+        'stress management': {
+            answer: 'Managing exam stress effectively during board exam preparation.',
+            steps: [
+                { title: 'Normalise the Pressure', content: 'Some stress is normal and even helpful — it signals that you care. The goal is to keep it at a manageable level, not eliminate it entirely.' },
+                { title: 'Take Breaks', content: 'Study in focused blocks (Pomodoro: 25 min study, 5 min break). Take a longer break (30-60 min) every 3-4 hours.' },
+                { title: 'Physical Activity', content: 'Even a 20-minute walk or light stretching daily significantly reduces cortisol (stress hormone) levels.' },
+                { title: 'Talk About It', content: 'Share concerns with a parent, friend, or teacher. Keeping stress bottled up makes it worse.' },
+                { title: 'Focus on What You Can Control', content: 'You cannot control the question paper. You can control your preparation and revision. Focus energy there.' }
+            ],
+            example: 'When anxiety spikes before an exam:\n1. Take 5 slow deep breaths (4 seconds in, hold 4, out 4)\n2. Remind yourself of past topics you have covered\n3. Focus on the first question only — not the entire paper',
+            tip: 'Comparing yourself to classmates is the fastest way to increase stress and reduce confidence. Focus on your own progress and improvement.'
+        }
+    }
+};
+
+var fallbackResponses = {
+    accountancy: 'I don\'t have a pre-written answer for that specific topic yet. For accountancy questions, try to: (1) Identify which accounts are affected, (2) Apply the Golden Rules (Personal, Real, Nominal), (3) Check if the accounting equation stays balanced. You can also rephrase your question or use the "Ask Teacher" button below to get a detailed explanation from your accountancy teacher.',
+    economics: 'That economics topic isn\'t in my current database. Try asking about: Law of Demand, Elasticity, GDP, Monetary Policy, Fiscal Policy, or Balance of Payments. You can also use the "Ask Teacher" button to forward your question directly to your economics teacher.',
+    business: 'I don\'t have a pre-written answer for that business studies topic. Try asking about: Management Functions, Marketing Mix, SWOT Analysis, Leadership Styles, Consumer Rights, or Capital Structure. Use the "Ask Teacher" button for anything more specific.',
+    maths: 'Please share the complete problem with all the given data and I\'ll do my best to guide you through it. For math problems, always: (1) Write down the given data, (2) Identify what needs to be found, (3) Choose the right formula. Use the "Ask Teacher" button if you need a fully worked solution.',
+    admin: 'I don\'t have that specific information. For accurate details about admissions, fees, schedules, or any academy matter, please contact the office directly:\nPhone: [Academy Phone]\nEmail: info@commerceacademy.com\nOffice Hours: 9 AM - 6 PM, Monday to Saturday.',
+    general: 'I can help with study tips, exam strategy, career guidance, and stress management. Could you be more specific about what you need help with? Use the quick tags below for common topics.'
+};
+
+function setSubject(subject) {
+    currentSubject = subject;
+    document.querySelectorAll('.nav-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    var activeBtn = document.querySelector('[data-subject="' + subject + '"]');
+    if (activeBtn) activeBtn.classList.add('active');
+
+    var config = subjectConfig[subject];
+    document.getElementById('chatTitle').textContent = config.title;
+    var badge = document.getElementById('subjectBadge');
+    badge.textContent = config.badge;
+    badge.className = 'badge ' + config.badgeClass;
+
+    var quickActions = document.getElementById('quickActions');
+    quickActions.innerHTML = config.quickTags.map(function(tag) {
+        return '<span class="quick-tag" onclick="quickAsk(\'' + tag.q.replace(/'/g, "\\'") + '\')">' + tag.label + '</span>';
+    }).join('');
+
+    if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+    }
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+}
+
+function focusInput() {
+    document.getElementById('userInput').focus();
+}
+
+function newChat() {
+    messages = [];
+    currentChatId = Date.now().toString();
+    var container = document.getElementById('messagesContainer');
+    var toRemove = container.querySelectorAll('.message, .typing, .escalate-confirm');
+    toRemove.forEach(function(el) { el.remove(); });
+    document.getElementById('welcomeScreen').style.display = 'flex';
+    document.getElementById('userInput').value = '';
+    document.getElementById('userInput').style.height = 'auto';
+    if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+    }
+    focusInput();
+}
+
+function quickAsk(text) {
+    document.getElementById('userInput').value = text;
+    sendMessage();
+}
+
+function handleKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+function findBestMatch(query, subject) {
+    var kb = knowledgeBase[subject] || {};
+    var q = query.toLowerCase();
+
+    for (var key in kb) {
+        if (q.includes(key)) return kb[key];
+    }
+
+    for (var key in kb) {
+        var keywords = key.split(' ');
+        var matchCount = keywords.filter(function(kw) { return q.includes(kw); }).length;
+        if (matchCount >= 2) return kb[key];
+    }
+
+    // Single keyword match as last resort
+    for (var key in kb) {
+        var keywords = key.split(' ');
+        var matchCount = keywords.filter(function(kw) { return kw.length > 3 && q.includes(kw); }).length;
+        if (matchCount >= 1) return kb[key];
+    }
+
+    return null;
+}
+
+function generateResponse(query, subject) {
+    var matched = findBestMatch(query, subject);
+    if (matched) return matched;
+
+    if ((subject === 'accountancy' || subject === 'maths') && /\d/.test(query) && /calculate|find|solve|compute|prepare|show|work/i.test(query)) {
+        return {
+            answer: 'I can see this is a numerical problem. Here is how to approach it:',
+            steps: [
+                { title: 'Step 1: Identify Given Data', content: 'Extract all numbers and what they represent from the question.' },
+                { title: 'Step 2: Determine What to Find', content: 'Clearly state what the answer needs to be — account balance, profit figure, derivative value, etc.' },
+                { title: 'Step 3: Select the Right Method', content: 'Choose the appropriate formula or accounting rule for this type of problem.' },
+                { title: 'Step 4: Solve Step by Step', content: 'Show all working clearly. Do not skip any steps in your solution.' }
+            ],
+            example: 'Your question: ' + query + '\n\nPlease share the complete data (all figures, dates, and conditions) and I can walk you through the full solution.',
+            tip: subject === 'accountancy' ? 'For accounting problems, always identify: (1) accounts affected, (2) debit/credit rule, (3) exact amount, (4) narration.' : 'For maths problems, write down all given values and what needs to be found before starting calculations.'
+        };
+    }
+
+    return { answer: fallbackResponses[subject] || fallbackResponses.general };
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatResponse(data) {
+    var config = subjectConfig[currentSubject];
+    var html = '<div class="subject-label">' + config.icon + ' ' + config.badge + ' — Answer</div>';
+    html += '<div>' + escapeHtml(data.answer).replace(/\n/g, '<br>') + '</div>';
+
+    if (data.steps) {
+        data.steps.forEach(function(step) {
+            html += '<div class="step-box"><div class="step-title">' + escapeHtml(step.title) + '</div><div>' + escapeHtml(step.content).replace(/\n/g, '<br>') + '</div></div>';
+        });
+    }
+
+    if (data.example) {
+        html += '<div class="formula">' + escapeHtml(data.example).replace(/\n/g, '<br>') + '</div>';
+    }
+
+    if (data.tip) {
+        html += '<div class="tip-box">💡 <strong>Tip:</strong> ' + escapeHtml(data.tip) + '</div>';
+    }
+
+    html += '<button class="escalate-btn" onclick="escalateToTeacher(this)">✉ Ask Teacher</button>';
+
+    return html;
+}
+
+function appendMessage(type, content) {
+    var container = document.getElementById('messagesContainer');
+    var welcome = document.getElementById('welcomeScreen');
+    welcome.style.display = 'none';
+
+    var div = document.createElement('div');
+    if (type === 'user') {
+        div.className = 'message user';
+        div.textContent = content;
+    } else if (type === 'bot') {
+        div.className = 'message bot';
+        div.innerHTML = content;
+    } else if (type === 'escalate') {
+        div.className = 'escalate-confirm';
+        div.innerHTML = content;
+    }
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+function sendMessage() {
+    var input = document.getElementById('userInput');
+    var text = input.value.trim();
+    if (!text || isProcessing) return;
+
+    isProcessing = true;
+    document.getElementById('sendBtn').disabled = true;
+
+    appendMessage('user', text);
+    messages.push({ type: 'user', text: text });
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Typing indicator
+    var container = document.getElementById('messagesContainer');
+    var typing = document.createElement('div');
+    typing.className = 'typing';
+    typing.id = 'typingIndicator';
+    typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    container.appendChild(typing);
+    container.scrollTop = container.scrollHeight;
+
+    var delay = 900 + Math.random() * 700;
+    setTimeout(function() {
+        var indicator = document.getElementById('typingIndicator');
+        if (indicator) indicator.remove();
+
+        var responseData = generateResponse(text, currentSubject);
+        var responseHtml = formatResponse(responseData);
+        appendMessage('bot', responseHtml);
+        messages.push({ type: 'bot', html: responseHtml });
+        saveChat(text);
+
+        isProcessing = false;
+        document.getElementById('sendBtn').disabled = false;
+    }, delay);
+}
+
+function escalateToTeacher(btn) {
+    if (btn) btn.disabled = true;
+    var lastUserMsg = '';
+    for (var i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].type === 'user') { lastUserMsg = messages[i].text; break; }
+    }
+    var config = subjectConfig[currentSubject];
+    appendMessage('escalate',
+        '✅ <strong>Forwarded to your ' + config.badge + ' teacher.</strong><br>' +
+        'Your question: <em>"' + escapeHtml(lastUserMsg) + '"</em><br><br>' +
+        'You will receive a response within <strong>24 hours</strong> via the academy WhatsApp group. ' +
+        'For urgent queries, visit the Sunday doubt session (10 AM - 1 PM) or call the office at [Academy Phone].'
+    );
+}
+
+function saveChat(preview) {
+    var previewText = preview.length > 50 ? preview.substring(0, 50) + '...' : preview;
+    var existing = null;
+    for (var i = 0; i < conversationHistory.length; i++) {
+        if (conversationHistory[i].id === currentChatId) { existing = conversationHistory[i]; break; }
+    }
+    if (existing) {
+        existing.preview = previewText;
+        existing.timestamp = Date.now();
+        existing.subject = currentSubject;
+    } else {
+        conversationHistory.unshift({ id: currentChatId, preview: previewText, timestamp: Date.now(), subject: currentSubject });
+    }
+    if (conversationHistory.length > 20) conversationHistory.pop();
+    try { localStorage.setItem('ca_chats', JSON.stringify(conversationHistory)); } catch(e) {}
+    renderHistory();
+}
+
+function renderHistory() {
+    var list = document.getElementById('historyList');
+    if (conversationHistory.length === 0) {
+        list.innerHTML = '<div style="font-size:12px;opacity:0.5;padding:8px 12px;">No recent chats</div>';
+        return;
+    }
+    list.innerHTML = conversationHistory.map(function(chat) {
+        var icon = (subjectConfig[chat.subject] && subjectConfig[chat.subject].icon) || '💬';
+        var active = chat.id === currentChatId ? ' active' : '';
+        return '<div class="history-item' + active + '" onclick="loadHistoryItem(\'' + chat.id + '\')">' + icon + ' ' + escapeHtml(chat.preview) + '</div>';
+    }).join('');
+}
+
+function loadHistoryItem(id) {
+    currentChatId = id;
+    newChat();
+    renderHistory();
+}
+
+// Auto-resize textarea
+document.getElementById('userInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Init
+renderHistory();
+focusInput();
+</script>
+</body>
+</html>
